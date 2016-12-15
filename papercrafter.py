@@ -9,7 +9,7 @@ PX_WIDTH, PX_HEIGHT = 2550, 3300
 
 MM_WIDTH, MM_HEIGHT = 215.9, 279.4
 
-GRID = 118
+GRID = 59
 
 
 def load_schematic(path = "schematic.json"):
@@ -47,7 +47,7 @@ def draw_schematic(cr, schematic):
     cr.set_source_rgb(1.0, 1.0, 1.0)
     cr.rectangle(0, 0, PX_WIDTH, PX_HEIGHT)
     cr.paint()
-    render_grid(cr)
+    #render_grid(cr)
     render_lines(cr, schematic["lines"])
     render_edges(cr, schematic["toothed_edges"])
     return

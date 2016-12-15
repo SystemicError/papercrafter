@@ -5,8 +5,8 @@ import sdl2
 import sdl2.ext
 import json
 
-GRID_WIDTH, GRID_HEIGHT = 21, 27
-GRID = 30
+GRID_WIDTH, GRID_HEIGHT = 42, 54
+GRID = 15
 PX_WIDTH, PX_HEIGHT = GRID_WIDTH*GRID, GRID_HEIGHT*GRID
 
 def run():
@@ -14,7 +14,10 @@ def run():
     window = sdl2.ext.Window("Schemer", size=(PX_WIDTH, PX_HEIGHT))
     window.show()
     running = True
-    schematic = {"lines": [], "toothed_edges": []}
+    if len(sys.argv) > 1:
+        schematic = load_schematic(sys.argv[1])
+    else:
+        schematic = {"lines": [], "toothed_edges": []}
     current_line = []
     while running:
         events = sdl2.ext.get_events()
@@ -30,6 +33,16 @@ def run():
     else:
         save_schematic("schematic.json", schematic)
     return 0
+
+def load_schematic(path):
+    try:
+        fin = open(path, "r")
+        schematic = json.loads(fin.read())
+        fin.close()
+        return schematic
+    except IOError:
+        return {"lines": [], "toothed_edges": []}
+
 
 def save_schematic(path, schematic):
     fout = open(path, "w")
