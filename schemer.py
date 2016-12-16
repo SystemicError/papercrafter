@@ -55,17 +55,23 @@ def process_inputs(event, schematic, current_line, current_selection):
     if event.type == sdl2.SDL_MOUSEBUTTONDOWN:
         x = int(event.button.x/float(GRID) + .5)
         y = int(event.button.y/float(GRID) + .5)
-        if event.button.button == sdl2.SDL_BUTTON_LEFT and current_selection == []:
-            if len(current_line) == 0:
-                current_line.append([x, y])
-            elif len(current_line) == 1:
-                current_line.append([x, y])
-                line = [current_line.pop(), current_line.pop()]
-                if line in schematic["lines"]:
-                    schematic["lines"].pop(schematic["lines"].index(line))
-                else:
-                    schematic["lines"].append(line)
+        if event.button.button == sdl2.SDL_BUTTON_LEFT:
+            if current_selection == []:
+                # draw new line
+                if len(current_line) == 0:
+                    current_line.append([x, y])
+                elif len(current_line) == 1:
+                    current_line.append([x, y])
+                    line = [current_line.pop(), current_line.pop()]
+                    if line in schematic["lines"]:
+                        schematic["lines"].pop(schematic["lines"].index(line))
+                    else:
+                        schematic["lines"].append(line)
+            elif len(current_selection) == 2:
+                # copy selection to here
+                copy_selection(schematic, current_selection, x, y)
         elif event.button.button == sdl2.SDL_BUTTON_RIGHT and current_line == []:
+            # select part of schematic
             if len(current_selection) == 0:
                 current_selection.append([x, y])
             elif len(current_selection) == 1:
@@ -77,11 +83,25 @@ def process_inputs(event, schematic, current_line, current_selection):
     elif event.type == sdl2.SDL_KEYDOWN:
         if len(current_selection) == 2:
             if event.key.keysym.sym == sdl2.SDLK_d:
+                # delete selection
                 delete_selection(schematic, current_selection)
 
+def copy_selection(schematic, selection, x, y):
+    "Adds a copy of selected area with upper left at x, y."
+    selected = [line for line in schematic["lines"] if line_is_selected(line, selection)]
+    dx = x - selection[0][0]
+    dy = y - selection[0][1]
+    translated = []
+    for line in selected:
+        tr_line = []
+        for point in line:
+            tr_line.append([point[0] + dx, point[1] + dy])
+        translated.append(tr_line)
+    schematic["lines"] = schematic["lines"] + translated
+
 def line_is_selected(line, selection):
-    "Returns true if either point of line is within selection."
-    return point_is_selected(line[0], selection) or point_is_selected(line[1], selection)
+    "Returns true if both points of line are within selection."
+    return point_is_selected(line[0], selection) and point_is_selected(line[1], selection)
 
 def point_is_selected(point, selection):
     "Returns true point is within selection."
