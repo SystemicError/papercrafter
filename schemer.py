@@ -63,8 +63,11 @@ def process_inputs(event, schematic, current_line, current_selection):
                 elif len(current_line) == 1:
                     current_line.append([x, y])
                     line = [current_line.pop(), current_line.pop()]
+                    line_reversed = [line[1], line[0]]
                     if line in schematic["lines"]:
                         schematic["lines"].pop(schematic["lines"].index(line))
+                    elif line_reversed in schematic["lines"]:
+                        schematic["lines"].pop(schematic["lines"].index(line_reversed))
                     else:
                         schematic["lines"].append(line)
             elif len(current_selection) == 2:
