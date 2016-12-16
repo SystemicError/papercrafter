@@ -19,14 +19,15 @@ def run():
     else:
         schematic = {"lines": [], "toothed_edges": []}
     current_line = []
+    current_selection = []
     while running:
         events = sdl2.ext.get_events()
         for event in events:
             if event.type == sdl2.SDL_QUIT:
                 running = False
                 break
-            process_inputs(event, schematic, current_line)
-        draw_frame(window, schematic, current_line)
+            process_inputs(event, schematic, current_line, current_selection)
+        draw_frame(window, schematic, current_line, current_selection)
         window.refresh()
     if len(sys.argv) > 1:
         save_schematic(sys.argv[1], schematic)
@@ -50,7 +51,7 @@ def save_schematic(path, schematic):
     fout.close()
     return
 
-def process_inputs(event, schematic, current_line):
+def process_inputs(event, schematic, current_line, current_selection):
     if event.type == sdl2.SDL_MOUSEBUTTONDOWN:
         x = int(event.button.x/float(GRID) + .5)
         y = int(event.button.y/float(GRID) + .5)
@@ -75,7 +76,7 @@ def point_to_vector(image, pt, focal_length):
     z = focal_length
     return [x, y, z]
 
-def draw_frame(window, schematic, current_line):
+def draw_frame(window, schematic, current_line, current_selection):
     "Given the preloaded surface 'image', paint as background."
     ctx = sdl2.ext.Renderer(window)
     ctx.clear()
