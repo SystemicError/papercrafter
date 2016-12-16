@@ -27,6 +27,7 @@ def run():
                 running = False
                 break
             process_inputs(event, schematic, current_line, current_selection)
+            trim_schematic(schematic)
         draw_frame(window, schematic, current_line, current_selection)
         window.refresh()
     if len(sys.argv) > 1:
@@ -50,6 +51,11 @@ def save_schematic(path, schematic):
     fout.write(json.dumps(schematic))
     fout.close()
     return
+
+def trim_schematic(schematic):
+    "Removes lines that extend outside the window."
+    selection = [[0, 0], [GRID_WIDTH, GRID_HEIGHT]]
+    schematic["lines"] = [line for line in schematic["lines"] if line_is_selected(line, selection)]
 
 def process_inputs(event, schematic, current_line, current_selection):
     if event.type == sdl2.SDL_MOUSEBUTTONDOWN:
