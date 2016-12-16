@@ -4,6 +4,7 @@ import sys
 import sdl2
 import sdl2.ext
 import json
+import copy
 
 GRID_WIDTH, GRID_HEIGHT = 42, 54
 GRID = 15
@@ -20,13 +21,14 @@ def run():
         schematic = {"lines": [], "toothed_edges": []}
     current_line = []
     current_selection = []
+    undo_stack = []
     while running:
         events = sdl2.ext.get_events()
         for event in events:
             if event.type == sdl2.SDL_QUIT:
                 running = False
                 break
-            process_inputs(event, schematic, current_line, current_selection)
+            process_inputs(event, schematic, current_line, current_selection, undo_stack)
             trim_schematic(schematic)
         draw_frame(window, schematic, current_line, current_selection)
         window.refresh()
@@ -57,7 +59,7 @@ def trim_schematic(schematic):
     selection = [[0, 0], [GRID_WIDTH, GRID_HEIGHT]]
     schematic["lines"] = [line for line in schematic["lines"] if line_is_selected(line, selection)]
 
-def process_inputs(event, schematic, current_line, current_selection):
+def process_inputs(event, schematic, current_line, current_selection, undo_stack):
     if event.type == sdl2.SDL_MOUSEBUTTONDOWN:
         x = int(event.button.x/float(GRID) + .5)
         y = int(event.button.y/float(GRID) + .5)
@@ -67,6 +69,7 @@ def process_inputs(event, schematic, current_line, current_selection):
                 if len(current_line) == 0:
                     current_line.append([x, y])
                 elif len(current_line) == 1:
+                    undo_stack.append(copy.deepcopy(schematic))
                     current_line.append([x, y])
                     line = [current_line.pop(), current_line.pop()]
                     line_reversed = [line[1], line[0]]
@@ -77,6 +80,7 @@ def process_inputs(event, schematic, current_line, current_selection):
                     else:
                         schematic["lines"].append(line)
             elif len(current_selection) == 2:
+                undo_stack.append(copy.deepcopy(schematic))
                 # copy selection to here
                 copy_selection(schematic, current_selection, x, y)
         elif event.button.button == sdl2.SDL_BUTTON_RIGHT and current_line == []:
@@ -92,14 +96,23 @@ def process_inputs(event, schematic, current_line, current_selection):
     elif event.type == sdl2.SDL_KEYDOWN:
         if len(current_selection) == 2:
             if event.key.keysym.sym == sdl2.SDLK_d:
+                undo_stack.append(copy.deepcopy(schematic))
                 # delete selection
                 delete_selection(schematic, current_selection)
             elif event.key.keysym.sym == sdl2.SDLK_r:
+                undo_stack.append(copy.deepcopy(schematic))
                 # rotate_selection counterclockwise
                 rotate_selection(schematic, current_selection)
             elif event.key.keysym.sym == sdl2.SDLK_t:
+                undo_stack.append(copy.deepcopy(schematic))
                 # transpose selection
                 transpose_selection(schematic, current_selection)
+        if event.key.keysym.sym == sdl2.SDLK_u:
+            # undo last action
+            if undo_stack:
+                previous = undo_stack.pop()
+                for field in schematic.keys():
+                    schematic[field] = previous[field]
 
 def transpose_selection(schematic, selection):
     "Transposes selection and adjusts selection to fit."
