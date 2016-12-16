@@ -88,6 +88,26 @@ def process_inputs(event, schematic, current_line, current_selection):
             if event.key.keysym.sym == sdl2.SDLK_d:
                 # delete selection
                 delete_selection(schematic, current_selection)
+            if event.key.keysym.sym == sdl2.SDLK_r:
+                # rotate_selection counterclockwise
+                rotate_selection(schematic, current_selection)
+
+def rotate_selection(schematic, selection):
+    "Rotates counterclockwise 90 and adjusts selection to fit."
+    selected = [line for line in schematic["lines"] if line_is_selected(line, selection)]
+    dx = selection[0][0]
+    dy = selection[0][1]
+    width = selection[1][0] - selection[0][0]
+    height = selection[1][1] - selection[0][1]
+    for line in selected:
+        for point in line:
+            tr_x = point[0] - dx
+            tr_y = point[1] - dy
+            point[0] = tr_y + dx 
+            point[1] = -tr_x + dy + width
+    # adjust selection
+    selection[1][0] = dx + height
+    selection[1][1] = dy + width
 
 def copy_selection(schematic, selection, x, y):
     "Adds a copy of selected area with upper left at x, y."
@@ -150,10 +170,10 @@ def highlight_selection(ctx, current_selection):
     color = sdl2.ext.Color(255, 0, 0)
     upper_left = current_selection[0]
     lower_right = current_selection[1]
-    min_x = int((upper_left[0] - .5)*GRID)
-    min_y = int((upper_left[1] - .5)*GRID)
-    max_x = int((lower_right[0] + .5)*GRID)
-    max_y = int((lower_right[1] + .5)*GRID)
+    min_x = int((upper_left[0] - .2)*GRID)
+    min_y = int((upper_left[1] - .2)*GRID)
+    max_x = int((lower_right[0] + .2)*GRID)
+    max_y = int((lower_right[1] + .2)*GRID)
     ctx.draw_line([min_x, min_y, min_x, max_y, max_x, max_y, max_x, min_y, min_x, min_y], color)
 
 if __name__ == "__main__":
