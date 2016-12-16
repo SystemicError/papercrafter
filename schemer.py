@@ -88,9 +88,29 @@ def process_inputs(event, schematic, current_line, current_selection):
             if event.key.keysym.sym == sdl2.SDLK_d:
                 # delete selection
                 delete_selection(schematic, current_selection)
-            if event.key.keysym.sym == sdl2.SDLK_r:
+            elif event.key.keysym.sym == sdl2.SDLK_r:
                 # rotate_selection counterclockwise
                 rotate_selection(schematic, current_selection)
+            elif event.key.keysym.sym == sdl2.SDLK_t:
+                # transpose selection
+                transpose_selection(schematic, current_selection)
+
+def transpose_selection(schematic, selection):
+    "Transposes selection and adjusts selection to fit."
+    selected = [line for line in schematic["lines"] if line_is_selected(line, selection)]
+    dx = selection[0][0]
+    dy = selection[0][1]
+    width = selection[1][0] - selection[0][0]
+    height = selection[1][1] - selection[0][1]
+    for line in selected:
+        for point in line:
+            tr_x = point[0] - dx
+            tr_y = point[1] - dy
+            point[0] = tr_y + dx 
+            point[1] = tr_x + dy
+    # adjust selection
+    selection[1][0] = dx + height
+    selection[1][1] = dy + width
 
 def rotate_selection(schematic, selection):
     "Rotates counterclockwise 90 and adjusts selection to fit."
