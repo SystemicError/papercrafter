@@ -74,6 +74,24 @@ def process_inputs(event, schematic, current_line, current_selection):
             elif len(current_selection) == 2:
                 current_selection.pop()
                 current_selection.pop()
+    elif event.type == sdl2.SDL_KEYDOWN:
+        if len(current_selection) == 2:
+            if event.key.keysym.sym == sdl2.SDLK_d:
+                delete_selection(schematic, current_selection)
+
+def line_is_selected(line, selection):
+    "Returns true if either point of line is within selection."
+    return point_is_selected(line[0], selection) or point_is_selected(line[1], selection)
+
+def point_is_selected(point, selection):
+    "Returns true point is within selection."
+    if point[0] >= selection[0][0] and point[0] <= selection[1][0] and point[1] >= selection[0][1] and point[1] <= selection[1][1]:
+        return True
+    else:
+        return False
+
+def delete_selection(schematic, selection):
+    schematic["lines"] = [x for x in schematic["lines"] if not line_is_selected(x, selection)]
 
 def adjust_selection(selection):
     "Makes sure that the first point is the upper left, second is lower right."
